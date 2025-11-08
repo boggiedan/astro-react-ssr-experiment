@@ -1,11 +1,255 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
+import Layout from "../layouts/Layout.astro";
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+/**
+ * Astro React SSR Worker Performance Experiment
+ * Home page with links to all test scenarios
+ */
+
+const testScenarios = [
+  {
+    name: "Simple SSR",
+    path: "/test/simple",
+    description: "Baseline React component rendering with minimal complexity",
+    complexity: "Low",
+    apiCalls: 0,
+    expectedTime: "10-20ms",
+    color: "blue",
+  },
+  {
+    name: "API-Heavy",
+    path: "/test/api-heavy",
+    description: "Multiple sequential API calls simulating I/O-bound scenarios",
+    complexity: "I/O Bound",
+    apiCalls: 3,
+    expectedTime: "150-450ms",
+    color: "green",
+  },
+  {
+    name: "CPU-Intensive",
+    path: "/test/cpu-intensive",
+    description: "Heavy analytics dashboard (2500 items, statistics, trend calculations)",
+    complexity: "High",
+    apiCalls: 0,
+    expectedTime: "200-500ms",
+    color: "purple",
+  },
+  {
+    name: "Mixed Scenario",
+    path: "/test/mixed",
+    description: "Real-world combination of API calls (30%) and CPU work (70%)",
+    complexity: "Mixed",
+    apiCalls: 1,
+    expectedTime: "150-400ms",
+    color: "red",
+  },
+];
 ---
 
 <Layout>
-	<Welcome />
+  <div
+    class="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50"
+  >
+    <div class="container mx-auto max-w-6xl px-4 py-12">
+      <!-- Header -->
+      <header class="mb-12 text-center">
+        <h1 class="mb-4 text-5xl font-bold text-gray-900">
+          Astro React SSR <span
+            class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
+            >Worker Experiment</span
+          >
+        </h1>
+        <p class="mb-6 text-xl text-gray-600">
+          Performance testing framework for worker-based vs traditional SSR
+        </p>
+        <div class="flex justify-center gap-4">
+          <div class="rounded-lg bg-white px-4 py-2 shadow">
+            <span class="text-sm text-gray-600">Scenarios:</span>
+            <span class="ml-2 text-lg font-bold text-blue-600"
+              >{testScenarios.length}</span
+            >
+          </div>
+          <div class="rounded-lg bg-white px-4 py-2 shadow">
+            <span class="text-sm text-gray-600">Framework:</span>
+            <span class="ml-2 text-lg font-bold text-purple-600"
+              >Astro + React</span
+            >
+          </div>
+        </div>
+      </header>
+
+      <!-- Test Scenarios Grid -->
+      <div class="mb-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {
+          testScenarios.map((scenario) => (
+            <a
+              href={scenario.path}
+              class="group overflow-hidden rounded-xl bg-white shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+            >
+              <div class={`h-2 bg-${scenario.color}-500`} />
+              <div class="p-6">
+                <h3 class="mb-2 text-2xl font-bold text-gray-900 transition-colors group-hover:text-blue-600">
+                  {scenario.name}
+                </h3>
+                <p class="mb-4 text-sm text-gray-600">{scenario.description}</p>
+
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs text-gray-500">Complexity:</span>
+                    <span
+                      class={`text-sm font-semibold text-${scenario.color}-600`}
+                    >
+                      {scenario.complexity}
+                    </span>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs text-gray-500">API Calls:</span>
+                    <span class="text-sm font-semibold">
+                      {scenario.apiCalls}
+                    </span>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs text-gray-500">Expected Time:</span>
+                    <span class="text-sm font-semibold text-gray-700">
+                      {scenario.expectedTime}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="mt-4 border-t border-gray-100 pt-4">
+                  <span class="text-sm font-medium text-blue-600 group-hover:text-blue-700">
+                    Run Test →
+                  </span>
+                </div>
+              </div>
+            </a>
+          ))
+        }
+      </div>
+
+      <!-- Project Information -->
+      <div class="mb-8 rounded-xl bg-white p-8 shadow-lg">
+        <h2 class="mb-4 text-2xl font-bold text-gray-900">
+          About This Experiment
+        </h2>
+        <div class="prose prose-blue max-w-none">
+          <p class="text-gray-700">
+            This project tests the performance impact of using worker threads
+            for server-side rendering in Astro with React. Inspired by Wix
+            Engineering's success (70% reduction in server pods, 153% RPM
+            improvement), we're evaluating whether similar gains are achievable
+            for Astro applications.
+          </p>
+
+          <div class="mt-6 grid gap-4 md:grid-cols-3">
+            <div class="rounded-lg bg-blue-50 p-4">
+              <h4 class="mb-2 font-bold text-blue-900">Traditional Mode</h4>
+              <p class="text-sm text-blue-800">
+                Single-threaded SSR on main event loop
+              </p>
+            </div>
+            <div class="rounded-lg bg-purple-50 p-4">
+              <h4 class="mb-2 font-bold text-purple-900">Worker Mode</h4>
+              <p class="text-sm text-purple-800">
+                Multi-threaded SSR with worker pool
+              </p>
+            </div>
+            <div class="rounded-lg bg-green-50 p-4">
+              <h4 class="mb-2 font-bold text-green-900">Hybrid Mode</h4>
+              <p class="text-sm text-green-800">
+                Smart routing based on workload type
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Benchmark Results -->
+      <div class="mb-8 rounded-xl bg-gradient-to-r from-green-600 to-teal-600 p-8 text-white shadow-lg">
+        <h2 class="mb-4 text-2xl font-bold">📊 Benchmark Results</h2>
+        <p class="mb-4 opacity-90">View detailed performance metrics and analysis from all benchmark runs</p>
+        <a
+          href="/benchmark-results"
+          class="inline-flex items-center gap-2 rounded-lg bg-white px-6 py-3 font-semibold text-green-600 transition-all hover:bg-gray-100"
+        >
+          View Results Dashboard →
+        </a>
+      </div>
+
+      <!-- Documentation Links -->
+      <div
+        class="rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 p-8 text-white shadow-lg"
+      >
+        <h2 class="mb-4 text-2xl font-bold">Documentation</h2>
+        <div class="grid gap-4 md:grid-cols-2">
+          <a
+            href="/docs/PROJECT-PLAN.md"
+            class="bg-opacity-20 hover:bg-opacity-30 rounded-lg bg-white p-4 transition-all"
+          >
+            <h3 class="mb-1 font-bold">📋 Project Plan</h3>
+            <p class="text-sm opacity-90">
+              Complete implementation roadmap and phases
+            </p>
+          </a>
+          <a
+            href="/docs/WORKER-SSR-IMPLEMENTATION.md"
+            class="bg-opacity-20 hover:bg-opacity-30 rounded-lg bg-white p-4 transition-all"
+          >
+            <h3 class="mb-1 font-bold">⚙️ Implementation Guide</h3>
+            <p class="text-sm opacity-90">Worker-based SSR technical details</p>
+          </a>
+          <a
+            href="/docs/WORKER-SSR-STREAMING-ANALYSIS.md"
+            class="bg-opacity-20 hover:bg-opacity-30 rounded-lg bg-white p-4 transition-all"
+          >
+            <h3 class="mb-1 font-bold">🔄 Streaming Analysis</h3>
+            <p class="text-sm opacity-90">
+              HTML streaming compatibility research
+            </p>
+          </a>
+          <a
+            href="https://github.com"
+            class="bg-opacity-20 hover:bg-opacity-30 rounded-lg bg-white p-4 transition-all"
+          >
+            <h3 class="mb-1 font-bold">📦 GitHub Repository</h3>
+            <p class="text-sm opacity-90">Source code and issue tracking</p>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
 </Layout>
+
+<style>
+  /* Ensure dynamic color classes are included */
+  .bg-blue-500 {
+    background-color: #3b82f6;
+  }
+  .bg-green-500 {
+    background-color: #10b981;
+  }
+  .bg-purple-500 {
+    background-color: #8b5cf6;
+  }
+  .bg-orange-500 {
+    background-color: #f97316;
+  }
+  .bg-red-500 {
+    background-color: #ef4444;
+  }
+  .text-blue-600 {
+    color: #2563eb;
+  }
+  .text-green-600 {
+    color: #059669;
+  }
+  .text-purple-600 {
+    color: #7c3aed;
+  }
+  .text-orange-600 {
+    color: #ea580c;
+  }
+  .text-red-600 {
+    color: #dc2626;
+  }
+</style>

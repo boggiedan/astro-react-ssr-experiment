@@ -1,14 +1,39 @@
 {
-  "name": "astro-ssr-experiment",
+  "name": "astro-react-ssr-experiment",
   "type": "module",
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "benchmark": "node benchmark/baseline.js",
+    "benchmark:quick": "node benchmark/baseline.js --duration 10 --connections 10 --pipelining 1",
+    "benchmark:stress": "node benchmark/baseline.js --stress",
+    "benchmark:extreme": "node benchmark/baseline.js --duration 120 --connections 2000 --pipelining 20",
+    "benchmark:full": "node benchmark/run-full-test.js",
+    "benchmark:full:stress": "node benchmark/run-full-test.js --stress",
+    "monitor": "node benchmark/monitor.js",
+    "monitor:long": "node benchmark/monitor.js --duration 180"
   },
   "dependencies": {
-    "astro": "^5.15.4"
+    "@astrojs/node": "^9.5.0",
+    "@astrojs/react": "^4.4.2",
+    "astro": "^5.15.4",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.17",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "autocannon": "^8.0.0",
+    "clinic": "^13.0.0",
+    "pidusage": "^4.0.1",
+    "piscina": "^5.1.4",
+    "prettier": "3.6.2",
+    "prettier-plugin-astro": "0.14.1",
+    "prettier-plugin-tailwindcss": "^0.7.1",
+    "tailwindcss": "^4.1.17"
   }
 }

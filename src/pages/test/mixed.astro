@@ -1,0 +1,215 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/components/test/Header";
+import ComplexChart from "@/components/test/ComplexChart";
+import { processData, generateChartData } from "@/lib/dataProcessing";
+
+/**
+ * Mixed Scenario Test Page
+ *
+ * Purpose: Real-world combination of API and CPU work
+ * Characteristics:
+ * - 30% API calls, 70% CPU work
+ * - Realistic page structure
+ * - Variable complexity
+ * - Expected render time: 150-400ms
+ */
+
+const startTime = Date.now();
+
+// Fetch data from API (I/O bound - 30%)
+const baseUrl = import.meta.env.DEV
+  ? "http://localhost:4321"
+  : Astro.url.origin;
+const dataResponse = await fetch(`${baseUrl}/api/data?delay=150&count=300`);
+const apiData = await dataResponse.json();
+
+const apiTime = Date.now() - startTime;
+
+// Process the data (CPU bound - 70%)
+const processed = processData(apiData);
+const chartData = generateChartData(processed);
+
+// Group by category for display
+const byCategory = processed.reduce(
+  (acc, item) => {
+    if (!acc[item.category]) {
+      acc[item.category] = [];
+    }
+    acc[item.category].push(item);
+    return acc;
+  },
+  {} as Record<string, typeof processed>
+);
+
+// Calculate category stats
+const categoryStats = Object.entries(byCategory)
+  .map(([category, items]) => {
+    const sum = items.reduce((acc, item) => acc + item.value, 0);
+    const avg = sum / items.length;
+    return { category, count: items.length, avg, sum };
+  })
+  .sort((a, b) => b.avg - a.avg);
+
+const totalTime = Date.now() - startTime;
+---
+
+<Layout>
+  <div class="min-h-screen bg-gray-50">
+    <Header
+      title="Mixed Scenario Test"
+      subtitle="Realistic combination of API and CPU work"
+      client:load
+    />
+
+    <main class="container mx-auto max-w-6xl px-4 py-8">
+      <div class="mb-6 rounded-lg bg-white p-6 shadow-lg">
+        <h2 class="mb-4 text-2xl font-bold text-gray-800">Test Information</h2>
+        <div class="grid grid-cols-2 gap-4 md:grid-cols-5">
+          <div class="rounded bg-blue-50 p-4">
+            <p class="text-sm text-gray-600">Test Type</p>
+            <p class="text-lg font-semibold text-blue-700">Mixed</p>
+          </div>
+          <div class="rounded bg-green-50 p-4">
+            <p class="text-sm text-gray-600">API Time</p>
+            <p class="text-lg font-semibold text-green-700">{apiTime}ms</p>
+          </div>
+          <div class="rounded bg-purple-50 p-4">
+            <p class="text-sm text-gray-600">CPU Time</p>
+            <p class="text-lg font-semibold text-purple-700">
+              {totalTime - apiTime}ms
+            </p>
+          </div>
+          <div class="rounded bg-orange-50 p-4">
+            <p class="text-sm text-gray-600">Total Time</p>
+            <p class="text-lg font-semibold text-orange-700">{totalTime}ms</p>
+          </div>
+          <div class="rounded bg-red-50 p-4">
+            <p class="text-sm text-gray-600">Data Points</p>
+            <p class="text-lg font-semibold text-red-700">{processed.length}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-6 grid gap-6 md:grid-cols-3">
+        {
+          categoryStats.map((stat) => (
+            <div class="rounded-lg bg-white p-5 shadow-lg">
+              <h3 class="mb-2 text-lg font-bold text-gray-800">
+                {stat.category}
+              </h3>
+              <div class="space-y-2">
+                <div class="flex justify-between text-sm">
+                  <span class="text-gray-600">Items:</span>
+                  <span class="font-semibold">{stat.count}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                  <span class="text-gray-600">Average:</span>
+                  <span class="font-semibold text-blue-600">
+                    {stat.avg.toFixed(2)}
+                  </span>
+                </div>
+                <div class="flex justify-between text-sm">
+                  <span class="text-gray-600">Total:</span>
+                  <span class="font-semibold text-purple-600">
+                    {stat.sum.toFixed(2)}
+                  </span>
+                </div>
+                <div class="mt-3">
+                  <div class="h-2 rounded-full bg-gray-200">
+                    <div
+                      class="h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all"
+                      style={`width: ${(stat.avg / Math.max(...categoryStats.map((s) => s.avg))) * 100}%`}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+
+      <div class="mb-6 rounded-lg bg-white p-6 shadow-lg">
+        <h3 class="mb-4 text-xl font-bold text-gray-800">Data Visualization</h3>
+        <ComplexChart data={chartData} client:load />
+      </div>
+
+      <div class="mb-6 rounded-lg bg-white p-6 shadow-lg">
+        <h3 class="mb-4 text-xl font-bold text-gray-800">
+          Performance Breakdown
+        </h3>
+
+        <div class="space-y-4">
+          <div class="flex items-center gap-4">
+            <div class="w-32 text-sm font-medium text-gray-700">API Call:</div>
+            <div class="flex-1">
+              <div class="relative h-8 rounded-full bg-gray-200">
+                <div
+                  class="flex h-8 items-center rounded-full bg-green-500 px-3 text-sm font-semibold text-white"
+                  style={`width: ${(apiTime / totalTime) * 100}%`}
+                >
+                  {apiTime}ms ({Math.round((apiTime / totalTime) * 100)}%)
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-4">
+            <div class="w-32 text-sm font-medium text-gray-700">
+              CPU Processing:
+            </div>
+            <div class="flex-1">
+              <div class="relative h-8 rounded-full bg-gray-200">
+                <div
+                  class="flex h-8 items-center rounded-full bg-purple-500 px-3 text-sm font-semibold text-white"
+                  style={`width: ${((totalTime - apiTime) / totalTime) * 100}%`}
+                >
+                  {totalTime - apiTime}ms ({
+                    Math.round(((totalTime - apiTime) / totalTime) * 100)
+                  }%)
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 rounded-lg border border-blue-200 bg-blue-50 p-4">
+          <p class="text-sm text-blue-800">
+            <strong>Worker Benefit Analysis:</strong> This page has {
+              Math.round((apiTime / totalTime) * 100)
+            }% I/O time and {
+              Math.round(((totalTime - apiTime) / totalTime) * 100)
+            }% CPU time. Workers will help with the CPU portion but not the I/O
+            portion, so expect ~{
+              Math.round(((totalTime - apiTime) / totalTime) * 50)
+            }% improvement at best.
+          </p>
+        </div>
+      </div>
+
+      <div class="rounded-lg bg-white p-6 shadow-lg">
+        <h3 class="mb-4 text-xl font-bold text-gray-800">Top Items</h3>
+        <div class="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-5">
+          {
+            processed.slice(0, 20).map((item) => (
+              <div class="rounded-lg border border-gray-200 bg-gradient-to-br from-blue-50 to-purple-50 p-3 text-center">
+                <div class="text-xs font-bold text-gray-500">#{item.rank}</div>
+                <div class="my-1 text-sm font-semibold">{item.label}</div>
+                <div class="text-lg font-bold text-blue-600">
+                  {item.value.toFixed(1)}
+                </div>
+                <div class="text-xs text-gray-500">{item.category}</div>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+
+      <div class="mt-6 rounded bg-gray-100 p-4 text-sm text-gray-600">
+        <p>Total server render time: {totalTime}ms</p>
+        <p>API time: {apiTime}ms | CPU time: {totalTime - apiTime}ms</p>
+        <p>Rendered at: {new Date().toISOString()}</p>
+      </div>
+    </main>
+  </div>
+</Layout>
