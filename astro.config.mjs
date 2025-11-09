@@ -18,6 +18,6 @@ export default defineConfig({
   integrations: [react()],
 
   adapter: node({
-    mode: 'standalone'
+    mode: 'middleware'
   })
 });
