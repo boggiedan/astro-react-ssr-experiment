@@ -256,12 +256,15 @@ function shouldUseWorker(
 
 /**
  * Detect I/O-heavy routes that should stay on main thread
+ *
+ * Only routes where I/O dominates (>70% of time) should stay on main thread.
+ * Mixed workloads with significant CPU time benefit from workers.
  */
 function isIOHeavyRoute(url: string): boolean {
   return (
-    url.includes('/api/') ||           // API endpoints
-    url.includes('/test/api-heavy') || // API-heavy test page
-    url.includes('/test/mixed')        // Mixed workload (has API calls)
+    url.includes('/api/') ||           // API endpoints (pure I/O)
+    url.includes('/test/api-heavy')    // API-heavy test page (>90% I/O)
+    // Note: /test/mixed removed - it has 50/50 I/O/CPU, workers can help
   );
 }
 
@@ -271,6 +274,7 @@ function isIOHeavyRoute(url: string): boolean {
 function isCPUIntensiveRoute(url: string): boolean {
   return (
     url.includes('/test/cpu-intensive') || // Heavy analytics dashboard
+    url.includes('/test/mixed') ||         // Mixed workload (50% CPU, 50% I/O)
     url.includes('/benchmark-results')     // Results visualization
   );
 }

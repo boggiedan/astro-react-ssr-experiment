@@ -1,5 +1,14 @@
 import { useState } from "react";
 
+interface ServerInfo {
+  mode: string;
+  debug: boolean;
+  nodeVersion: string;
+  platform: string;
+  cpuCores: number;
+  timestamp: string;
+}
+
 interface BenchmarkRun {
   testType: string;
   timestamp: string;
@@ -8,6 +17,7 @@ interface BenchmarkRun {
     connections: number;
   };
   baseUrl: string;
+  serverInfo?: ServerInfo | null;
   totalDuration: string;
   results: BenchmarkResult[];
 }
@@ -115,10 +125,9 @@ export default function BenchmarkViewer({
             <button
               key={run.timestamp}
               onClick={() => {
-                console.log("Clicked index:", index);
                 setSelectedRunIndex(index);
               }}
-              className={`rounded-lg border-2 p-4 text-left transition-all ${
+              className={`cursor-pointer rounded-lg border-2 p-4 text-left transition-all ${
                 index === validIndex
                   ? "border-blue-500 bg-blue-50"
                   : "border-gray-200 bg-white hover:border-blue-300 hover:bg-gray-50"
@@ -167,6 +176,41 @@ export default function BenchmarkViewer({
             {formatDate(selectedRun.timestamp)}
           </span>
         </div>
+
+        {/* Server Mode Info */}
+        {selectedRun.serverInfo && (
+          <div className="mb-6 rounded-lg border-2 border-indigo-200 bg-indigo-50 p-4">
+            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-indigo-700">
+              Server Configuration
+            </h3>
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+              <div>
+                <p className="text-xs text-indigo-600">SSR Mode</p>
+                <p className="text-lg font-bold uppercase text-indigo-900">
+                  {selectedRun.serverInfo.mode}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-indigo-600">Node.js</p>
+                <p className="text-lg font-bold text-indigo-900">
+                  {selectedRun.serverInfo.nodeVersion}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-indigo-600">CPU Cores</p>
+                <p className="text-lg font-bold text-indigo-900">
+                  {selectedRun.serverInfo.cpuCores}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-indigo-600">Platform</p>
+                <p className="text-lg font-bold text-indigo-900">
+                  {selectedRun.serverInfo.platform}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Config Info */}
         <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">

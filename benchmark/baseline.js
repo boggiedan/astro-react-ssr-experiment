@@ -121,10 +121,27 @@ console.log(`Estimated concurrent requests: ~${config.connections * config.pipel
 console.log('');
 
 const results = [];
+let serverInfo = null;
 
 // Helper to safely format numbers with default values
 function safeFormat(value, decimals = 2, defaultValue = 0) {
   return (value !== undefined && value !== null) ? value.toFixed(decimals) : defaultValue.toFixed(decimals);
+}
+
+// Fetch server information (mode, platform, etc.)
+async function fetchServerInfo() {
+  try {
+    const response = await fetch(`${baseUrl}/api/server-info`);
+    if (!response.ok) {
+      console.warn('⚠️  Could not fetch server info (endpoint may not be available)');
+      return null;
+    }
+    const info = await response.json();
+    return info;
+  } catch (error) {
+    console.warn('⚠️  Could not fetch server info:', error.message);
+    return null;
+  }
 }
 
 async function runTest(scenario) {
@@ -243,6 +260,7 @@ async function runAllTests() {
     timestamp: new Date().toISOString(),
     config,
     baseUrl,
+    serverInfo,
     totalDuration: totalTime,
     results,
   };
@@ -287,5 +305,21 @@ async function checkServer() {
 // Main execution
 (async () => {
   await checkServer();
+
+  // Fetch server information
+  console.log('🔍 Fetching server information...');
+  serverInfo = await fetchServerInfo();
+
+  if (serverInfo) {
+    console.log(`✅ Server Mode: ${serverInfo.mode.toUpperCase()}`);
+    console.log(`   Node.js: ${serverInfo.nodeVersion}`);
+    console.log(`   CPU Cores: ${serverInfo.cpuCores}`);
+    console.log(`   Platform: ${serverInfo.platform}`);
+    if (serverInfo.debug) {
+      console.log(`   Debug: ${serverInfo.debug}`);
+    }
+  }
+  console.log('');
+
   await runAllTests();
 })();
