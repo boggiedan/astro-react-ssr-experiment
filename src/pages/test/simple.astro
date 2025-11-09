@@ -1,0 +1,65 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/components/test/Header";
+import SimpleReact from "@/components/test/SimpleReact";
+
+/**
+ * Simple SSR Test Page
+ *
+ * Purpose: Baseline React component rendering
+ * Characteristics:
+ * - Minimal React component
+ * - No API calls
+ * - No complex calculations
+ * - Expected render time: 10-20ms
+ */
+
+const startTime = Date.now();
+---
+
+<Layout>
+  <div class="min-h-screen bg-gray-50">
+    <Header
+      title="Simple SSR Test"
+      subtitle="Baseline React component rendering"
+      client:load
+    />
+
+    <main class="container mx-auto max-w-4xl px-4 py-8">
+      <div class="mb-6 rounded-lg bg-white p-6 shadow-lg">
+        <h2 class="mb-4 text-2xl font-bold text-gray-800">Test Information</h2>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="rounded bg-blue-50 p-4">
+            <p class="text-sm text-gray-600">Test Type</p>
+            <p class="text-lg font-semibold text-blue-700">Simple SSR</p>
+          </div>
+          <div class="rounded bg-green-50 p-4">
+            <p class="text-sm text-gray-600">Complexity</p>
+            <p class="text-lg font-semibold text-green-700">Low</p>
+          </div>
+          <div class="rounded bg-purple-50 p-4">
+            <p class="text-sm text-gray-600">API Calls</p>
+            <p class="text-lg font-semibold text-purple-700">0</p>
+          </div>
+          <div class="rounded bg-orange-50 p-4">
+            <p class="text-sm text-gray-600">Expected Time</p>
+            <p class="text-lg font-semibold text-orange-700">10-20ms</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="rounded-lg bg-white p-6 shadow-lg">
+        <SimpleReact
+          message="Hello from Simple SSR Test!"
+          count={100}
+          client:load
+        />
+      </div>
+
+      <div class="mt-6 rounded bg-gray-100 p-4 text-sm text-gray-600">
+        <p>Server render time: {Date.now() - startTime}ms</p>
+        <p>Rendered at: {new Date().toISOString()}</p>
+      </div>
+    </main>
+  </div>
+</Layout>

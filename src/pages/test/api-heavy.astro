@@ -1,0 +1,84 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/components/test/Header";
+import DataDisplay from "@/components/test/DataDisplay";
+
+/**
+ * API-Heavy SSR Test Page
+ *
+ * Purpose: Simulate database/external API dependencies
+ * Characteristics:
+ * - Multiple sequential API calls
+ * - I/O bound (workers shouldn't help much)
+ * - Tests hybrid routing decision
+ * - Expected render time: 150-1500ms
+ */
+
+const startTime = Date.now();
+
+// Fetch from mock APIs with delays
+const baseUrl = import.meta.env.DEV
+  ? "http://localhost:4321"
+  : Astro.url.origin;
+
+const [userResponse, postsResponse, commentsResponse] = await Promise.all([
+  fetch(`${baseUrl}/api/user?delay=100`),
+  fetch(`${baseUrl}/api/posts?delay=150&count=10`),
+  fetch(`${baseUrl}/api/comments?delay=200&count=20`),
+]);
+
+const user = await userResponse.json();
+const posts = await postsResponse.json();
+const comments = await commentsResponse.json();
+
+const renderTime = Date.now() - startTime;
+---
+
+<Layout>
+  <div class="min-h-screen bg-gray-50">
+    <Header
+      title="API-Heavy SSR Test"
+      subtitle="Multiple sequential API calls"
+      client:load
+    />
+
+    <main class="container mx-auto max-w-6xl px-4 py-8">
+      <div class="mb-6 rounded-lg bg-white p-6 shadow-lg">
+        <h2 class="mb-4 text-2xl font-bold text-gray-800">Test Information</h2>
+        <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+          <div class="rounded bg-blue-50 p-4">
+            <p class="text-sm text-gray-600">Test Type</p>
+            <p class="text-lg font-semibold text-blue-700">API-Heavy</p>
+          </div>
+          <div class="rounded bg-green-50 p-4">
+            <p class="text-sm text-gray-600">Complexity</p>
+            <p class="text-lg font-semibold text-green-700">I/O Bound</p>
+          </div>
+          <div class="rounded bg-purple-50 p-4">
+            <p class="text-sm text-gray-600">API Calls</p>
+            <p class="text-lg font-semibold text-purple-700">3</p>
+          </div>
+          <div class="rounded bg-orange-50 p-4">
+            <p class="text-sm text-gray-600">Render Time</p>
+            <p class="text-lg font-semibold text-orange-700">{renderTime}ms</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="rounded-lg bg-white p-6 shadow-lg">
+        <DataDisplay
+          user={user}
+          posts={posts}
+          comments={comments}
+          client:load
+        />
+      </div>
+
+      <div class="mt-6 rounded bg-gray-100 p-4 text-sm text-gray-600">
+        <p>Total server render time: {renderTime}ms</p>
+        <p>Expected: ~450ms (100ms + 150ms + 200ms for parallel fetches)</p>
+        <p>Rendered at: {new Date().toISOString()}</p>
+      </div>
+    </main>
+  </div>
+</Layout>

@@ -1,0 +1,43 @@
+{
+  "name": "astro-react-ssr-experiment",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build && node scripts/build-server.js",
+    "build:astro": "astro build",
+    "build:server": "node scripts/build-server.js",
+    "preview": "astro preview",
+    "preview:traditional": "SSR_MODE=traditional node dist/server/custom-server.js",
+    "preview:worker": "SSR_MODE=worker node dist/server/custom-server.js",
+    "preview:worker:debug": "SSR_MODE=worker SSR_DEBUG=true node dist/server/custom-server.js",
+    "preview:hybrid": "SSR_MODE=hybrid node dist/server/custom-server.js",
+    "preview:hybrid:debug": "SSR_MODE=hybrid SSR_DEBUG=true node dist/server/custom-server.js",
+    "astro": "astro",
+    "benchmark": "node benchmark/baseline.js --duration 10 --connections 10 --pipelining 1",
+    "benchmark:stress": "node benchmark/baseline.js",
+    "benchmark:extreme": "node benchmark/baseline.js --stress"
+  },
+  "dependencies": {
+    "@astrojs/node": "^9.5.0",
+    "@astrojs/react": "^4.4.2",
+    "astro": "^5.15.4",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.17",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "autocannon": "^8.0.0",
+    "clinic": "^13.0.0",
+    "esbuild": "^0.24.2",
+    "pidusage": "^4.0.1",
+    "piscina": "^5.1.4",
+    "prettier": "3.6.2",
+    "prettier-plugin-astro": "0.14.1",
+    "prettier-plugin-tailwindcss": "^0.7.1",
+    "tailwindcss": "^4.1.17",
+    "tsx": "^4.20.6"
+  }
+}

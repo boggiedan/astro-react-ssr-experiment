@@ -1,0 +1,174 @@
+{
+  "testType": "baseline",
+  "timestamp": "2025-11-09T20:44:05.594Z",
+  "config": {
+    "duration": 10,
+    "connections": 10,
+    "pipelining": 1,
+    "workers": 8
+  },
+  "baseUrl": "http://localhost:4321",
+  "serverInfo": {
+    "mode": "traditional",
+    "debug": false,
+    "nodeVersion": "v22.14.0",
+    "platform": "linux",
+    "cpuCores": 16,
+    "timestamp": "2025-11-09T20:43:16.088Z"
+  },
+  "totalDuration": "49.50",
+  "results": [
+    {
+      "scenario": "Simple SSR",
+      "url": "/test/simple",
+      "description": "Baseline - minimal SSR overhead",
+      "expectedRT": "10-20ms",
+      "timestamp": "2025-11-09T20:43:27.214Z",
+      "config": {
+        "duration": 10,
+        "connections": 10
+      },
+      "metrics": {
+        "requests": {
+          "total": 10167,
+          "average": 914.5,
+          "mean": 914.5
+        },
+        "throughput": {
+          "total": 97450695,
+          "average": 8764825.6,
+          "mean": 8764825.6
+        },
+        "latency": {
+          "mean": 7.5,
+          "stddev": 4.89,
+          "min": 1,
+          "max": 87,
+          "p50": 6,
+          "p75": 8,
+          "p90": 13,
+          "p95": 20,
+          "p99": 23,
+          "p999": 42
+        },
+        "errors": 0,
+        "timeouts": 0,
+        "non2xx": 0
+      }
+    },
+    {
+      "scenario": "API-Heavy",
+      "url": "/test/api-heavy",
+      "description": "I/O bound - multiple API calls",
+      "expectedRT": "150-450ms",
+      "timestamp": "2025-11-09T20:43:39.344Z",
+      "config": {
+        "duration": 10,
+        "connections": 10
+      },
+      "metrics": {
+        "requests": {
+          "total": 353,
+          "average": 35.3,
+          "mean": 35.3
+        },
+        "throughput": {
+          "total": 8417991,
+          "average": 841932.8,
+          "mean": 841932.8
+        },
+        "latency": {
+          "mean": 225.41,
+          "stddev": 4.34,
+          "min": 204,
+          "max": 232,
+          "p50": 226,
+          "p75": 228,
+          "p90": 230,
+          "p95": 231,
+          "p99": 231,
+          "p999": 232
+        },
+        "errors": 0,
+        "timeouts": 0,
+        "non2xx": 0
+      }
+    },
+    {
+      "scenario": "CPU-Intensive",
+      "url": "/test/cpu-intensive",
+      "description": "CPU bound - heavy analytics dashboard",
+      "expectedRT": "200-500ms",
+      "timestamp": "2025-11-09T20:43:51.469Z",
+      "config": {
+        "duration": 10,
+        "connections": 10
+      },
+      "metrics": {
+        "requests": {
+          "total": 604,
+          "average": 60.4,
+          "mean": 60.4
+        },
+        "throughput": {
+          "total": 281536310,
+          "average": 28155904,
+          "mean": 28155904
+        },
+        "latency": {
+          "mean": 130.97,
+          "stddev": 50.82,
+          "min": 33,
+          "max": 575,
+          "p50": 108,
+          "p75": 143,
+          "p90": 209,
+          "p95": 261,
+          "p99": 289,
+          "p999": 575
+        },
+        "errors": 0,
+        "timeouts": 0,
+        "non2xx": 0
+      }
+    },
+    {
+      "scenario": "Mixed",
+      "url": "/test/mixed",
+      "description": "Real-world - API + CPU work",
+      "expectedRT": "150-400ms",
+      "timestamp": "2025-11-09T20:44:03.590Z",
+      "config": {
+        "duration": 10,
+        "connections": 10
+      },
+      "metrics": {
+        "requests": {
+          "total": 384,
+          "average": 38.4,
+          "mean": 38.4
+        },
+        "throughput": {
+          "total": 24181927,
+          "average": 2418176,
+          "mean": 2418176
+        },
+        "latency": {
+          "mean": 204.75,
+          "stddev": 17.12,
+          "min": 169,
+          "max": 238,
+          "p50": 202,
+          "p75": 223,
+          "p90": 228,
+          "p95": 233,
+          "p99": 235,
+          "p999": 238
+        },
+        "errors": 0,
+        "timeouts": 0,
+        "non2xx": 0
+      }
+    }
+  ]
+}
