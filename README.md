@@ -94,15 +94,25 @@ npm run preview:hybrid:debug    # With debug logging
 ### Benchmarking
 
 ```bash
-# Quick test (10s, 10 connections, ~10 concurrent requests)
+# Development test (10s, 10 connections, ~10 concurrent requests)
 npm run benchmark
 
-# Standard test (30s, 100 connections, ~1,000 concurrent requests)
+# Peak production load (30s, 50 connections, ~200 concurrent requests)
+npm run benchmark:peak
+
+# Stress test - single instance breaking point (30s, 100 connections, ~1,000 concurrent requests)
 npm run benchmark:stress
 
-# Heavy test (60s, 1,000 connections, ~10,000 concurrent requests)
+# Extreme load - multi-instance test (60s, 1,000 connections, ~10,000 concurrent requests)
 npm run benchmark:extreme
 ```
+
+**Note:** The `stress` and `extreme` benchmarks are designed to exceed single-instance capacity. They're meant for:
+- Finding breaking points and failure modes
+- Capacity planning (determining how many instances needed)
+- Testing graceful degradation under overload
+
+For realistic single-instance performance testing, use `benchmark` or `benchmark:peak`.
 
 ## Benchmark Suite
 
