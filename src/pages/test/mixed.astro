@@ -18,8 +18,10 @@ import { processData, generateChartData } from "@/lib/dataProcessing";
 const startTime = Date.now();
 
 // Fetch data from API (I/O bound - 30%)
-const baseUrl = import.meta.env.DEV
-  ? "http://localhost:4321"
+// In Docker: use INTERNAL_API_URL to call own APIs directly (bypass nginx)
+// Otherwise: use request origin (for dev/standalone deployments)
+const baseUrl = import.meta.env.SSR
+  ? (process.env.INTERNAL_API_URL || Astro.url.origin)
   : Astro.url.origin;
 const dataResponse = await fetch(`${baseUrl}/api/data?delay=150&count=300`);
 const apiData = await dataResponse.json();

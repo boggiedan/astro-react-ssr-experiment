@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  # Nginx load balancer
+  nginx:
+    image: nginx:alpine
+    container_name: astro-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - astro-app
+    networks:
+      - astro-network
+    restart: unless-stopped
+
+  # Astro SSR application
+  # Strategy 1: Equal CPU division across replicas
+  # Default: 4 replicas × 4 cores = 16 cores total (adjust REPLICAS for your CPU count)
+  astro-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      # SSR modes: traditional, worker, hybrid, fetch-proxy
+      - SSR_MODE=${SSR_MODE:-worker}
+      - HOST=0.0.0.0
+      - PORT=4321
+      # Internal API URL: containers call their own APIs directly (bypass nginx)
+      - INTERNAL_API_URL=http://localhost:4321
+      # Docker deployment info for benchmarks
+      - REPLICAS=${REPLICAS:-4}
+    networks:
+      - astro-network
+    deploy:
+      # Number of replicas based on your CPU cores
+      # For 16 cores: 4 replicas (each gets 4 cores)
+      # For 8 cores:  2 replicas (each gets 4 cores)
+      # Formula: REPLICAS = CPU_CORES / 4
+      replicas: ${REPLICAS:-4}
+
+      resources:
+        limits:
+          # No CPU limits - allow containers to burst and use 100% of available CPU
+          # Kernel scheduler will balance load across all replicas
+          memory: ${MEMORY_LIMIT:-512M}
+        reservations:
+          # Minimum guaranteed resources per replica
+          cpus: '${CPU_RESERVATION:-2.0}'
+          memory: ${MEMORY_RESERVATION:-256M}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4321/api/server-info"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  astro-network:
+    driver: bridge

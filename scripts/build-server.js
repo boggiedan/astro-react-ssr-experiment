@@ -23,10 +23,14 @@ async function buildServerFiles() {
     await build({
       entryPoints: [
         join(rootDir, 'src/server/custom-server.ts'),
+        join(rootDir, 'src/server/custom-server-fetch-proxy.ts'),
         join(rootDir, 'src/server/worker-standalone.ts'),
+        join(rootDir, 'src/server/worker-fetch-proxy.ts'),
         join(rootDir, 'src/server/serialize.ts'),
         join(rootDir, 'src/server/worker-pool.ts'),
+        join(rootDir, 'src/server/worker-pool-fetch-proxy.ts'),
         join(rootDir, 'src/server/worker-middleware.ts'),
+        join(rootDir, 'src/server/fetch-proxy.ts'),
       ],
       bundle: false, // Don't bundle, just transpile
       outdir: join(rootDir, 'dist/server'),

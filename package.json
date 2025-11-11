@@ -13,6 +13,7 @@
     "preview:worker:debug": "SSR_MODE=worker SSR_DEBUG=true node dist/server/custom-server.js",
     "preview:hybrid": "SSR_MODE=hybrid node dist/server/custom-server.js",
     "preview:hybrid:debug": "SSR_MODE=hybrid SSR_DEBUG=true node dist/server/custom-server.js",
+    "preview:fetch-proxy": "SSR_MODE=fetch-proxy node dist/server/custom-server-fetch-proxy.js",
     "astro": "astro",
     "benchmark": "node benchmark/baseline.js --duration 10 --connections 10 --pipelining 1",
     "benchmark:peak": "node benchmark/baseline.js --duration 30 --connections 50 --pipelining 4",
