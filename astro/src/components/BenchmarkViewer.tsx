@@ -1,14 +1,16 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 interface ServerInfo {
   mode: string;
-  debug: boolean;
+  debug?: boolean;
+  runtime?: string; // 'PHP' for PHP, undefined for Node.js
   deployment?: {
     type: string;
     replicas: number;
     multiInstance: boolean;
   };
-  nodeVersion: string;
+  nodeVersion?: string; // For Node.js/Astro
+  phpVersion?: string; // For PHP
   platform: string;
   cpuCores: number;
   timestamp: string;
@@ -73,6 +75,7 @@ interface BenchmarkViewerProps {
 export default function BenchmarkViewer({
   benchmarkRuns,
 }: BenchmarkViewerProps) {
+  const detailsRef = useRef<HTMLDivElement>(null);
   const [selectedRunIndex, setSelectedRunIndex] = useState(0);
 
   // Ensure selectedRunIndex is valid
@@ -113,10 +116,302 @@ export default function BenchmarkViewer({
     );
   }
 
+  // Calculate winners based on composite score (throughput + latency)
+  const runsWithScores = benchmarkRuns.map((run, index) => {
+    const avgThroughput =
+      run.results.reduce((sum, r) => sum + r.metrics.requests.mean, 0) /
+      run.results.length;
+    const avgMeanLatency =
+      run.results.reduce((sum, r) => sum + r.metrics.latency.mean, 0) /
+      run.results.length;
+    const avgP95Latency =
+      run.results.reduce((sum, r) => sum + r.metrics.latency.p95, 0) /
+      run.results.length;
+    const avgP99Latency =
+      run.results.reduce((sum, r) => sum + r.metrics.latency.p99, 0) /
+      run.results.length;
+
+    // Composite score: favor high throughput and low latency
+    // Throughput is weighted positively, latency negatively
+    // Score = (throughput * 10) - (mean_latency / 10) - (p95 / 15) - (p99 / 20)
+    const score =
+      avgThroughput * 10 -
+      avgMeanLatency / 10 -
+      avgP95Latency / 15 -
+      avgP99Latency / 20;
+
+    return {
+      run,
+      index,
+      avgThroughput,
+      avgMeanLatency,
+      avgP95Latency,
+      avgP99Latency,
+      score,
+    };
+  });
+
+  const sortedByPerformance = [...runsWithScores].sort(
+    (a, b) => b.score - a.score,
+  );
+  const topTwo = sortedByPerformance.slice(0, 2);
+
   return (
     <div>
+      {/* Winners Comparison - Only show if we have at least 2 results */}
+      {benchmarkRuns.length >= 2 && (
+        <div className="mb-8 rounded-lg border-2 border-yellow-200 bg-gradient-to-br from-yellow-50 to-orange-50 p-6 shadow-lg">
+          <div className="mb-6 text-center">
+            <h2 className="mb-2 text-3xl font-bold text-gray-900">
+              🏆 Top 2 Performers
+            </h2>
+            <p className="text-gray-600">
+              Side-by-side comparison of the best performing test runs
+            </p>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2">
+            {topTwo.map((item, position) => {
+              const { run, index } = item;
+              const medal = position === 0 ? "🥇" : "🥈";
+              const borderColor =
+                position === 0 ? "border-yellow-400" : "border-gray-400";
+              const bgColor = position === 0 ? "bg-yellow-50" : "bg-gray-50";
+
+              return (
+                <div
+                  key={run.timestamp}
+                  className={`rounded-lg border-4 ${borderColor} ${bgColor} p-5 shadow-md`}
+                >
+                  <div className="mb-4 flex items-center justify-between">
+                    <h3 className="text-2xl font-bold text-gray-900">
+                      {medal} {position === 0 ? "Winner" : "Runner-up"}
+                    </h3>
+                    <button
+                      onClick={() => {
+                        setSelectedRunIndex(index);
+                        detailsRef.current?.scrollIntoView({
+                          behavior: "smooth",
+                          block: "start",
+                          inline: "nearest",
+                        });
+                      }}
+                      className="cursor-pointer rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700"
+                    >
+                      View Full Details
+                    </button>
+                  </div>
+
+                  {/* Server Info */}
+                  {run.serverInfo && (
+                    <div className="mb-4 rounded-lg bg-white p-3 shadow-sm">
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <div>
+                          <p className="text-xs text-gray-500">Mode</p>
+                          <p className="font-bold text-gray-900 uppercase">
+                            {run.serverInfo.mode}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500">Runtime</p>
+                          <p className="font-bold text-gray-900">
+                            {run.serverInfo.runtime === "PHP" ||
+                            run.serverInfo.phpVersion
+                              ? "PHP"
+                              : "Node.js"}{" "}
+                            {run.serverInfo.phpVersion ||
+                              run.serverInfo.nodeVersion}
+                          </p>
+                        </div>
+                        {run.serverInfo.deployment && (
+                          <>
+                            <div>
+                              <p className="text-xs text-gray-500">
+                                Deployment
+                              </p>
+                              <p className="font-bold text-gray-900 uppercase">
+                                {run.serverInfo.deployment.type}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500">Replicas</p>
+                              <p className="font-bold text-gray-900">
+                                {run.serverInfo.deployment.replicas}
+                              </p>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Overall Score */}
+                  <div className="mb-4 rounded-lg bg-white p-3 shadow-sm">
+                    <p className="mb-1 text-xs text-gray-500">
+                      Performance Score
+                    </p>
+                    <p className="text-3xl font-bold text-purple-600">
+                      {item.score.toFixed(0)}
+                    </p>
+                    <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <p className="text-gray-500">Avg Throughput</p>
+                        <p className="font-bold text-green-600">
+                          {item.avgThroughput.toFixed(1)} req/s
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-gray-500">Avg Mean Latency</p>
+                        <p className="font-bold text-blue-600">
+                          {item.avgMeanLatency.toFixed(1)}ms
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-gray-500">Avg P95</p>
+                        <p className="font-bold text-orange-600">
+                          {item.avgP95Latency.toFixed(1)}ms
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-gray-500">Avg P99</p>
+                        <p className="font-bold text-red-600">
+                          {item.avgP99Latency.toFixed(1)}ms
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Scenario Results */}
+                  <div className="space-y-2">
+                    <h4 className="mb-2 text-sm font-semibold text-gray-700">
+                      Scenarios:
+                    </h4>
+                    {run.results.map((result) => (
+                      <div
+                        key={result.scenario}
+                        className="rounded-lg bg-white p-3 shadow-sm"
+                      >
+                        <div className="mb-2 flex items-center justify-between">
+                          <span className="text-sm font-semibold text-gray-900">
+                            {result.scenario}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            {result.description}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2 text-xs">
+                          <div>
+                            <p className="text-gray-500">Req/sec</p>
+                            <p className="font-bold text-green-600">
+                              {result.metrics.requests.mean.toFixed(1)}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-gray-500">Mean</p>
+                            <p className="font-bold text-blue-600">
+                              {result.metrics.latency.mean.toFixed(1)}ms
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-gray-500">P95</p>
+                            <p className="font-bold text-orange-600">
+                              {result.metrics.latency.p95.toFixed(1)}ms
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-4 rounded-lg bg-white p-2 text-center text-xs text-gray-500">
+                    {formatDate(run.timestamp)}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Scoring Explanation */}
+          <div className="mt-6 rounded-lg border-2 border-blue-200 bg-blue-50 p-5">
+            <h3 className="mb-3 text-lg font-bold text-blue-900">
+              📊 How Winners Are Determined
+            </h3>
+            <div className="space-y-3 text-sm text-blue-800">
+              <p>
+                Rankings are calculated using a{" "}
+                <strong>composite performance score</strong> that balances both
+                throughput and latency metrics across all test scenarios.
+              </p>
+
+              <div className="rounded-lg bg-white p-4">
+                <h4 className="mb-2 font-bold text-blue-900">
+                  Scoring Formula:
+                </h4>
+                <code className="mb-3 block rounded bg-blue-100 p-3 font-mono text-xs text-blue-900">
+                  Score = (Throughput × 10) - (Mean Latency ÷ 10) - (P95 Latency
+                  ÷ 15) - (P99 Latency ÷ 20)
+                </code>
+
+                <div className="grid grid-cols-1 gap-3 text-xs md:grid-cols-2">
+                  <div className="flex items-start gap-2">
+                    <span className="font-bold text-green-600">✓</span>
+                    <div>
+                      <strong className="text-green-700">
+                        Throughput (×10):
+                      </strong>
+                      <p className="text-gray-600">
+                        Higher requests/sec increases score significantly
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="font-bold text-blue-600">✓</span>
+                    <div>
+                      <strong className="text-blue-700">
+                        Mean Latency (÷10):
+                      </strong>
+                      <p className="text-gray-600">
+                        Lower average response time increases score
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="font-bold text-orange-600">✓</span>
+                    <div>
+                      <strong className="text-orange-700">
+                        P95 Latency (÷15):
+                      </strong>
+                      <p className="text-gray-600">
+                        Better 95th percentile improves score
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="font-bold text-red-600">✓</span>
+                    <div>
+                      <strong className="text-red-700">
+                        P99 Latency (÷20):
+                      </strong>
+                      <p className="text-gray-600">
+                        Better tail latency (99th percentile) helps score
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <p className="text-xs text-blue-700 italic">
+                💡 This balanced approach ensures winners excel at both handling
+                high traffic volumes (throughput) and maintaining fast response
+                times (latency), providing the best overall user experience.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Run Selector */}
-      <div className="mb-6 rounded-lg bg-white p-6 shadow-lg">
+      <div ref={detailsRef} className="mb-6 rounded-lg bg-white p-6 shadow-lg">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-xl font-bold text-gray-800">Select Test Run</h2>
           <span className="text-sm text-gray-500">
@@ -185,20 +480,28 @@ export default function BenchmarkViewer({
         {/* Server Mode Info */}
         {selectedRun.serverInfo && (
           <div className="mb-6 rounded-lg border-2 border-indigo-200 bg-indigo-50 p-4">
-            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-indigo-700">
+            <h3 className="mb-3 text-sm font-semibold tracking-wide text-indigo-700 uppercase">
               Server Configuration
             </h3>
-            <div className={`grid grid-cols-2 gap-3 ${selectedRun.serverInfo.deployment ? 'md:grid-cols-5' : 'md:grid-cols-4'}`}>
+            <div
+              className={`grid grid-cols-2 gap-3 ${selectedRun.serverInfo.deployment ? "md:grid-cols-5" : "md:grid-cols-4"}`}
+            >
               <div>
                 <p className="text-xs text-indigo-600">SSR Mode</p>
-                <p className="text-lg font-bold uppercase text-indigo-900">
+                <p className="text-lg font-bold text-indigo-900 uppercase">
                   {selectedRun.serverInfo.mode}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-indigo-600">Node.js</p>
+                <p className="text-xs text-indigo-600">
+                  {selectedRun.serverInfo.runtime === "PHP" ||
+                  selectedRun.serverInfo.phpVersion
+                    ? "PHP"
+                    : "Node.js"}
+                </p>
                 <p className="text-lg font-bold text-indigo-900">
-                  {selectedRun.serverInfo.nodeVersion}
+                  {selectedRun.serverInfo.phpVersion ||
+                    selectedRun.serverInfo.nodeVersion}
                 </p>
               </div>
               <div>
@@ -216,7 +519,7 @@ export default function BenchmarkViewer({
               {selectedRun.serverInfo.deployment && (
                 <div>
                   <p className="text-xs text-indigo-600">Deployment</p>
-                  <p className="text-lg font-bold uppercase text-indigo-900">
+                  <p className="text-lg font-bold text-indigo-900 uppercase">
                     {selectedRun.serverInfo.deployment.type}
                   </p>
                   {selectedRun.serverInfo.deployment.multiInstance && (
