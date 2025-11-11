@@ -315,6 +315,12 @@ async function checkServer() {
     console.log(`   Node.js: ${serverInfo.nodeVersion}`);
     console.log(`   CPU Cores: ${serverInfo.cpuCores}`);
     console.log(`   Platform: ${serverInfo.platform}`);
+    if (serverInfo.deployment) {
+      console.log(`   Deployment: ${serverInfo.deployment.type.toUpperCase()}`);
+      if (serverInfo.deployment.multiInstance) {
+        console.log(`   Replicas: ${serverInfo.deployment.replicas} (Multi-instance)`);
+      }
+    }
     if (serverInfo.debug) {
       console.log(`   Debug: ${serverInfo.debug}`);
     }

@@ -3,6 +3,11 @@ import { useState } from "react";
 interface ServerInfo {
   mode: string;
   debug: boolean;
+  deployment?: {
+    type: string;
+    replicas: number;
+    multiInstance: boolean;
+  };
   nodeVersion: string;
   platform: string;
   cpuCores: number;
@@ -183,7 +188,7 @@ export default function BenchmarkViewer({
             <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-indigo-700">
               Server Configuration
             </h3>
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            <div className={`grid grid-cols-2 gap-3 ${selectedRun.serverInfo.deployment ? 'md:grid-cols-5' : 'md:grid-cols-4'}`}>
               <div>
                 <p className="text-xs text-indigo-600">SSR Mode</p>
                 <p className="text-lg font-bold uppercase text-indigo-900">
@@ -208,6 +213,19 @@ export default function BenchmarkViewer({
                   {selectedRun.serverInfo.platform}
                 </p>
               </div>
+              {selectedRun.serverInfo.deployment && (
+                <div>
+                  <p className="text-xs text-indigo-600">Deployment</p>
+                  <p className="text-lg font-bold uppercase text-indigo-900">
+                    {selectedRun.serverInfo.deployment.type}
+                  </p>
+                  {selectedRun.serverInfo.deployment.multiInstance && (
+                    <p className="text-xs text-indigo-700">
+                      {selectedRun.serverInfo.deployment.replicas} replicas
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         )}
