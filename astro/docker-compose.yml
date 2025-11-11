@@ -24,13 +24,16 @@ services:
       dockerfile: Dockerfile
     environment:
       # SSR modes: traditional, worker, hybrid, fetch-proxy
-      - SSR_MODE=${SSR_MODE:-worker}
+      - SSR_MODE=${SSR_MODE:-traditional}
       - HOST=0.0.0.0
       - PORT=4321
       # Internal API URL: containers call their own APIs directly (bypass nginx)
       - INTERNAL_API_URL=http://localhost:4321
       # Docker deployment info for benchmarks
       - REPLICAS=${REPLICAS:-4}
+      # Worker threads: Auto-detects from CPU quota, or override manually
+      # With 4 replicas and 2 CPUs each: WORKER_THREADS=2 per container = 8 total workers
+      - WORKER_THREADS=${WORKER_THREADS:-}
     networks:
       - astro-network
     deploy:

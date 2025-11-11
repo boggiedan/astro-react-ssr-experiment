@@ -1,6 +1,6 @@
 {
   "testType": "baseline",
-  "timestamp": "2025-11-11T07:34:26.578Z",
+  "timestamp": "2025-11-11T20:53:41.760Z",
   "config": {
     "duration": 30,
     "connections": 50,
@@ -9,7 +9,7 @@
   },
   "baseUrl": "http://localhost",
   "serverInfo": {
-    "mode": "hybrid",
+    "mode": "traditional",
     "debug": false,
     "deployment": {
       "type": "docker",
@@ -19,42 +19,42 @@
     "nodeVersion": "v22.21.0",
     "platform": "linux",
     "cpuCores": 16,
-    "timestamp": "2025-11-11T07:32:17.910Z"
+    "timestamp": "2025-11-11T20:51:33.198Z"
   },
-  "totalDuration": "128.66",
+  "totalDuration": "128.55",
   "results": [
     {
       "scenario": "Simple SSR",
       "url": "/test/simple",
       "description": "Baseline - minimal SSR overhead",
       "expectedRT": "10-20ms",
-      "timestamp": "2025-11-11T07:32:48.106Z",
+      "timestamp": "2025-11-11T20:52:03.348Z",
       "config": {
         "duration": 30,
         "connections": 50
       },
       "metrics": {
         "requests": {
-          "total": 59632,
-          "average": 1988.04,
-          "mean": 1988.04
+          "total": 62162,
+          "average": 2072.31,
+          "mean": 2072.31
         },
         "throughput": {
-          "total": 575275892,
-          "average": 19177100.8,
-          "mean": 19177100.8
+          "total": 599844546,
+          "average": 19994794.67,
+          "mean": 19994794.67
         },
         "latency": {
-          "mean": 129.81,
-          "stddev": 212.11,
-          "min": 28,
-          "max": 2264,
-          "p50": 68,
-          "p75": 89,
-          "p90": 134,
-          "p95": 838,
-          "p99": 1087,
-          "p999": 1912
+          "mean": 140.5,
+          "stddev": 250.96,
+          "min": 21,
+          "max": 1021,
+          "p50": 53,
+          "p75": 83,
+          "p90": 374,
+          "p95": 991,
+          "p99": 1003,
+          "p999": 1017
         },
         "errors": 0,
         "timeouts": 0,
@@ -66,33 +66,33 @@
       "url": "/test/api-heavy",
       "description": "I/O bound - multiple API calls",
       "expectedRT": "150-450ms",
-      "timestamp": "2025-11-11T07:33:20.240Z",
+      "timestamp": "2025-11-11T20:52:35.478Z",
       "config": {
         "duration": 30,
         "connections": 50
       },
       "metrics": {
         "requests": {
-          "total": 6186,
-          "average": 206.2,
-          "mean": 206.2
+          "total": 6294,
+          "average": 209.8,
+          "mean": 209.8
         },
         "throughput": {
-          "total": 147902794,
-          "average": 4930048,
-          "mean": 4930048
+          "total": 150485038,
+          "average": 5016132.27,
+          "mean": 5016132.27
         },
         "latency": {
-          "mean": 917.44,
-          "stddev": 70.92,
-          "min": 244,
-          "max": 1243,
-          "p50": 918,
-          "p75": 939,
-          "p90": 962,
-          "p95": 1020,
-          "p99": 1050,
-          "p999": 1218
+          "mean": 901.07,
+          "stddev": 69.86,
+          "min": 230,
+          "max": 1277,
+          "p50": 899,
+          "p75": 914,
+          "p90": 933,
+          "p95": 1037,
+          "p99": 1095,
+          "p999": 1240
         },
         "errors": 0,
         "timeouts": 0,
@@ -104,33 +104,33 @@
       "url": "/test/cpu-intensive",
       "description": "CPU bound - heavy analytics dashboard",
       "expectedRT": "200-500ms",
-      "timestamp": "2025-11-11T07:33:52.418Z",
+      "timestamp": "2025-11-11T20:53:07.619Z",
       "config": {
         "duration": 30,
         "connections": 50
       },
       "metrics": {
         "requests": {
-          "total": 4223,
-          "average": 140.77,
-          "mean": 140.77
+          "total": 3762,
+          "average": 125.4,
+          "mean": 125.4
         },
         "throughput": {
-          "total": 1971068891,
-          "average": 65704209.07,
-          "mean": 65704209.07
+          "total": 1755835041,
+          "average": 58530201.6,
+          "mean": 58530201.6
         },
         "latency": {
-          "mean": 1331.89,
-          "stddev": 389.41,
-          "min": 110,
-          "max": 5083,
-          "p50": 1295,
-          "p75": 1444,
-          "p90": 1583,
-          "p95": 1908,
-          "p99": 3551,
-          "p999": 4103
+          "mean": 1492.28,
+          "stddev": 188.32,
+          "min": 51,
+          "max": 1688,
+          "p50": 1522,
+          "p75": 1540,
+          "p90": 1564,
+          "p95": 1612,
+          "p99": 1630,
+          "p999": 1669
         },
         "errors": 0,
         "timeouts": 0,
@@ -142,33 +142,33 @@
       "url": "/test/mixed",
       "description": "Real-world - API + CPU work",
       "expectedRT": "150-400ms",
-      "timestamp": "2025-11-11T07:34:24.574Z",
+      "timestamp": "2025-11-11T20:53:39.757Z",
       "config": {
         "duration": 30,
         "connections": 50
       },
       "metrics": {
         "requests": {
-          "total": 8215,
-          "average": 273.84,
-          "mean": 273.84
+          "total": 6576,
+          "average": 219.2,
+          "mean": 219.2
         },
         "throughput": {
-          "total": 518696937,
-          "average": 17288533.34,
-          "mean": 17288533.34
+          "total": 415017379,
+          "average": 13833011.2,
+          "mean": 13833011.2
         },
         "latency": {
-          "mean": 692.75,
-          "stddev": 44.86,
-          "min": 204,
-          "max": 855,
-          "p50": 701,
-          "p75": 711,
-          "p90": 721,
-          "p95": 737,
-          "p99": 748,
-          "p999": 824
+          "mean": 862.4,
+          "stddev": 72.05,
+          "min": 169,
+          "max": 913,
+          "p50": 872,
+          "p75": 877,
+          "p90": 882,
+          "p95": 892,
+          "p99": 897,
+          "p999": 902
         },
         "errors": 0,
         "timeouts": 0,

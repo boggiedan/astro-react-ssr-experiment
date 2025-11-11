@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  # Nginx load balancer
+  nginx:
+    image: nginx:alpine
+    container_name: php-nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx-load-balancer.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - php-app
+    networks:
+      - php-network
+    restart: unless-stopped
+
+  # PHP SSR application
+  php-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      # Internal API URL: containers call their own APIs directly (bypass nginx)
+      - INTERNAL_API_URL=http://localhost:8080
+      # Docker deployment info for benchmarks
+      - REPLICAS=${REPLICAS:-4}
+      - PORT=8080
+    networks:
+      - php-network
+    deploy:
+      # Number of replicas based on your CPU cores
+      # For 16 cores: 4 replicas (each gets 4 cores)
+      # For 8 cores:  2 replicas (each gets 4 cores)
+      replicas: ${REPLICAS:-4}
+
+      resources:
+        limits:
+          # No CPU limits - allow containers to burst
+          memory: ${MEMORY_LIMIT:-512M}
+        reservations:
+          # Minimum guaranteed resources per replica
+          cpus: '${CPU_RESERVATION:-2.0}'
+          memory: ${MEMORY_RESERVATION:-256M}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/server-info"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  php-network:
+    driver: bridge

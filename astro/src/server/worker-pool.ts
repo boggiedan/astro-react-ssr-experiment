@@ -48,12 +48,68 @@ class WorkerPoolManager {
   }
 
   /**
+   * Get CPU count respecting Docker/container limits
+   *
+   * Checks:
+   * 1. WORKER_THREADS env var (manual override)
+   * 2. Docker CPU quota from cgroups
+   * 3. Falls back to os.cpus().length
+   */
+  private getCpuCount(): number {
+    // Manual override via environment variable
+    if (process.env.WORKER_THREADS) {
+      const override = parseInt(process.env.WORKER_THREADS, 10);
+      if (override > 0) {
+        console.log(`   Using manual override: ${override} workers`);
+        return override;
+      }
+    }
+
+    // Try to detect Docker CPU quota from cgroups v2
+    try {
+      const fs = require('fs');
+      const quota = fs.readFileSync('/sys/fs/cgroup/cpu.max', 'utf8').trim();
+      const [max, period] = quota.split(' ').map(Number);
+
+      if (max && period && max !== -1) {
+        const cpuQuota = Math.floor(max / period);
+        if (cpuQuota > 0) {
+          console.log(`   Detected Docker CPU quota: ${cpuQuota} cores`);
+          return cpuQuota;
+        }
+      }
+    } catch (err) {
+      // cgroups v2 not available, try v1
+      try {
+        const fs = require('fs');
+        const quota = parseInt(fs.readFileSync('/sys/fs/cgroup/cpu/cpu.cfs_quota_us', 'utf8').trim(), 10);
+        const period = parseInt(fs.readFileSync('/sys/fs/cgroup/cpu/cpu.cfs_period_us', 'utf8').trim(), 10);
+
+        if (quota > 0 && period > 0) {
+          const cpuQuota = Math.floor(quota / period);
+          console.log(`   Detected Docker CPU quota (v1): ${cpuQuota} cores`);
+          return cpuQuota;
+        }
+      } catch (err2) {
+        // Not in a container or cgroups not available
+      }
+    }
+
+    // Fallback to actual CPU cores
+    const physicalCores = cpus().length;
+    console.log(`   Using physical CPU cores: ${physicalCores}`);
+    return physicalCores;
+  }
+
+  /**
    * Initialize the worker pool
    *
    * Configuration based on Wix Engineering's findings:
    * - minThreads: Half of CPU cores (warm standby)
    * - maxThreads: CPU cores (full utilization under load)
    * - maxQueue: Auto (unbounded queue)
+   *
+   * Respects Docker CPU limits to avoid over-provisioning workers
    */
   async initialize(): Promise<void> {
     if (this.pool) {
@@ -61,9 +117,9 @@ class WorkerPoolManager {
       return;
     }
 
-    const cpuCount = cpus().length;
-    const minThreads = Math.max(2, Math.floor(cpuCount / 2));
-    const maxThreads = cpuCount;
+    const cpuCount = this.getCpuCount();
+    const minThreads = Math.max(1, Math.floor(cpuCount / 2));
+    const maxThreads = Math.max(2, cpuCount);
 
     console.log(`🚀 Initializing worker pool:`);
     console.log(`   CPU cores: ${cpuCount}`);
