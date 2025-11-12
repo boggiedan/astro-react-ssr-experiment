@@ -5,6 +5,7 @@ Performance benchmarking comparing different SSR implementations across multiple
 - **PHP** - Traditional SSR with PHP-FPM
 - **Astro** - Custom worker pool, hybrid, and traditional SSR modes
 - **Vanilla Node.js + React** - Worker pool and traditional SSR modes
+- **Vanilla Node.js + Preact** - Worker pool and traditional SSR modes
 
 All implementations are tested with Docker replicas and nginx load balancing to compare performance under various workloads.
 
@@ -30,6 +31,10 @@ This project experiments **worker-based SSR** inspired by [Wix Engineering's app
 - **Hybrid**: Intelligent routing (I/O on main, CPU on workers)
 
 **Vanilla Node.js + React:**
+- **Traditional**: Single-threaded SSR
+- **Worker**: Worker pool for parallel rendering
+
+**Vanilla Node.js + Preact:**
 - **Traditional**: Single-threaded SSR
 - **Worker**: Worker pool for parallel rendering
 
@@ -66,6 +71,23 @@ SSR_MODE=worker npm start
 docker-compose up --build
 ```
 
+### Run Vanilla Node.js + Preact
+
+```bash
+cd nodejs-preact
+npm install
+npm run build
+
+# Traditional mode
+npm start
+
+# Worker mode
+SSR_MODE=worker npm start
+
+# Or use Docker with replicas
+docker-compose up --build
+```
+
 ### Run PHP
 
 ```bash
@@ -79,8 +101,11 @@ docker-compose up --build
 # Benchmark Astro (must be running on localhost:80)
 npm run benchmark:astro
 
-# Benchmark Node.js (must be running on localhost:3000)
+# Benchmark Node.js + React (must be running on localhost:3000)
 npm run benchmark:nodejs
+
+# Benchmark Node.js + Preact (must be running on localhost:3001)
+npm run benchmark:preact
 
 # Benchmark PHP (must be running on localhost:8080)
 npm run benchmark:php

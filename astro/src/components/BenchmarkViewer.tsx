@@ -105,16 +105,16 @@ export default function BenchmarkViewer({
     if (serverInfo.runtime === "PHP" || serverInfo.phpVersion) {
       return "PHP";
     }
+
     if (serverInfo.runtime === "Astro") {
-      return "Astro";
+      return `Astro (${serverInfo.framework || "vanilla"})`;
     }
-    if (
-      serverInfo.runtime === "Node.js" &&
-      serverInfo.framework === "vanilla"
-    ) {
-      return "Node.js (vanilla)";
+
+    if (serverInfo.runtime === "Node.js") {
+      return `Node.js (${serverInfo.framework || "vanilla"})`;
     }
-    return "Node.js";
+
+    return "Unkown";
   }
 
   if (benchmarkRuns.length === 0) {
@@ -173,7 +173,7 @@ export default function BenchmarkViewer({
   );
 
   // Show min 2, max 4 performers based on available data
-  const topCount = Math.min(Math.max(2, benchmarkRuns.length), 4);
+  const topCount = Math.min(Math.max(2, benchmarkRuns.length), 8);
   const topPerformers = sortedByPerformance.slice(0, topCount);
 
   // Medal mapping
@@ -206,8 +206,10 @@ export default function BenchmarkViewer({
             {topPerformers.map((item, position) => {
               const { run, index } = item;
               const medal = medals[position];
-              const borderColor = borderColors[position];
-              const bgColor = bgColors[position];
+              const borderColor =
+                borderColors[position] || borderColors[borderColors.length - 1];
+              const bgColor =
+                bgColors[position] || bgColors[bgColors.length - 1];
 
               return (
                 <div
@@ -481,6 +483,15 @@ export default function BenchmarkViewer({
               </div>
               <div className="space-y-1 text-xs text-gray-600">
                 <p>{formatDate(run.timestamp)}</p>
+                <p className="font-semibold text-gray-800">
+                  {getRuntimeDisplay(run.serverInfo)}
+                </p>
+                <p>
+                  Mode:{" "}
+                  <span className="font-medium">
+                    {run.serverInfo.mode || "N/A"}
+                  </span>
+                </p>
                 <p>
                   {run.config.duration}s • {run.config.connections} connections
                 </p>

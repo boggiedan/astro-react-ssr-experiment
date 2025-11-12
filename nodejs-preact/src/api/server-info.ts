@@ -12,7 +12,7 @@ export async function handleServerInfo(url: URL): Promise<any> {
   return {
     mode: ssrMode,
     runtime: 'Node.js',
-    framework: 'react',
+    framework: 'preact',
     nodeVersion: process.version,
     deployment: {
       type: process.env.DOCKER ? 'docker' : 'standalone',

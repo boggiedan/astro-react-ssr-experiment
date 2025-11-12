@@ -11,7 +11,7 @@
   "serverInfo": {
     "mode": "worker",
     "runtime": "Node.js",
-    "framework": "vanilla",
+    "framework": "react",
     "nodeVersion": "v22.21.0",
     "deployment": {
       "type": "docker",
