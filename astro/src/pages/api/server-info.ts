@@ -22,6 +22,7 @@ export const GET: APIRoute = async () => {
     JSON.stringify(
       {
         mode: ssrMode,
+        runtime: "Astro",
         debug: ssrDebug,
         deployment: {
           type: isDocker ? "docker" : "standalone",

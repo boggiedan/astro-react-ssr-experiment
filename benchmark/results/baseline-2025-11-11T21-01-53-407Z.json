@@ -19,7 +19,8 @@
     "nodeVersion": "v22.21.0",
     "platform": "linux",
     "cpuCores": 16,
-    "timestamp": "2025-11-11T20:59:44.833Z"
+    "timestamp": "2025-11-11T20:59:44.833Z",
+    "runtime": "Astro"
   },
   "totalDuration": "128.56",
   "results": [
