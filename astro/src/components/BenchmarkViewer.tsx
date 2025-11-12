@@ -443,7 +443,7 @@ export default function BenchmarkViewer({
       )}
 
       {/* Run Selector */}
-      <div ref={detailsRef} className="mb-6 rounded-lg bg-white p-6 shadow-lg">
+      <div className="mb-6 rounded-lg bg-white p-6 shadow-lg">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-xl font-bold text-gray-800">Select Test Run</h2>
           <span className="text-sm text-gray-500">
@@ -505,7 +505,7 @@ export default function BenchmarkViewer({
       </div>
 
       {/* Selected Run Details */}
-      <div className="mb-8 rounded-lg bg-white p-6 shadow-lg">
+      <div ref={detailsRef} className="mb-8 rounded-lg bg-white p-6 shadow-lg">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-2xl font-bold text-gray-800">
             {validIndex === 0
