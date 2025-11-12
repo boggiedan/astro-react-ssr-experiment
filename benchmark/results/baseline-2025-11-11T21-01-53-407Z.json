@@ -20,7 +20,8 @@
     "platform": "linux",
     "cpuCores": 16,
     "timestamp": "2025-11-11T20:59:44.833Z",
-    "runtime": "Astro"
+    "runtime": "Astro",
+    "framework": "react"
   },
   "totalDuration": "128.56",
   "results": [
