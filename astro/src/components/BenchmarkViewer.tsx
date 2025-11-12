@@ -3,7 +3,8 @@ import { useRef, useState } from "react";
 interface ServerInfo {
   mode: string;
   debug?: boolean;
-  runtime?: string; // 'PHP' for PHP, undefined for Node.js
+  runtime?: string; // 'Astro', 'Node.js', or 'PHP'
+  framework?: string; // 'vanilla' for vanilla Node.js
   deployment?: {
     type: string;
     replicas: number;
@@ -100,6 +101,22 @@ export default function BenchmarkViewer({
     return "text-gray-700";
   }
 
+  function getRuntimeDisplay(serverInfo: ServerInfo) {
+    if (serverInfo.runtime === "PHP" || serverInfo.phpVersion) {
+      return "PHP";
+    }
+    if (serverInfo.runtime === "Astro") {
+      return "Astro";
+    }
+    if (
+      serverInfo.runtime === "Node.js" &&
+      serverInfo.framework === "vanilla"
+    ) {
+      return "Node.js (vanilla)";
+    }
+    return "Node.js";
+  }
+
   if (benchmarkRuns.length === 0) {
     return (
       <div className="rounded-lg bg-yellow-50 p-8 text-center">
@@ -154,7 +171,20 @@ export default function BenchmarkViewer({
   const sortedByPerformance = [...runsWithScores].sort(
     (a, b) => b.score - a.score,
   );
-  const topTwo = sortedByPerformance.slice(0, 2);
+
+  // Show min 2, max 4 performers based on available data
+  const topCount = Math.min(Math.max(2, benchmarkRuns.length), 4);
+  const topPerformers = sortedByPerformance.slice(0, topCount);
+
+  // Medal mapping
+  const medals = ["🥇", "🥈", "🥉", "🏅"];
+  const borderColors = [
+    "border-yellow-400",
+    "border-gray-400",
+    "border-orange-400",
+    "border-blue-400",
+  ];
+  const bgColors = ["bg-yellow-50", "bg-gray-50", "bg-orange-50", "bg-blue-50"];
 
   return (
     <div>
@@ -163,20 +193,21 @@ export default function BenchmarkViewer({
         <div className="mb-8 rounded-lg border-2 border-yellow-200 bg-gradient-to-br from-yellow-50 to-orange-50 p-6 shadow-lg">
           <div className="mb-6 text-center">
             <h2 className="mb-2 text-3xl font-bold text-gray-900">
-              🏆 Top 2 Performers
+              🏆 Top {topCount} Performers
             </h2>
             <p className="text-gray-600">
               Side-by-side comparison of the best performing test runs
             </p>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2">
-            {topTwo.map((item, position) => {
+          <div
+            className={`grid gap-6 ${topCount === 2 ? "md:grid-cols-2" : topCount === 3 ? "md:grid-cols-3" : "md:grid-cols-2 lg:grid-cols-4"}`}
+          >
+            {topPerformers.map((item, position) => {
               const { run, index } = item;
-              const medal = position === 0 ? "🥇" : "🥈";
-              const borderColor =
-                position === 0 ? "border-yellow-400" : "border-gray-400";
-              const bgColor = position === 0 ? "bg-yellow-50" : "bg-gray-50";
+              const medal = medals[position];
+              const borderColor = borderColors[position];
+              const bgColor = bgColors[position];
 
               return (
                 <div
@@ -185,7 +216,7 @@ export default function BenchmarkViewer({
                 >
                   <div className="mb-4 flex items-center justify-between">
                     <h3 className="text-2xl font-bold text-gray-900">
-                      {medal} {position === 0 ? "Winner" : "Runner-up"}
+                      {medal} {position === 0 ? "Winner" : `#${position + 1}`}
                     </h3>
                     <button
                       onClick={() => {
@@ -215,10 +246,9 @@ export default function BenchmarkViewer({
                         <div>
                           <p className="text-xs text-gray-500">Runtime</p>
                           <p className="font-bold text-gray-900">
-                            {run.serverInfo.runtime === "PHP" ||
-                            run.serverInfo.phpVersion
-                              ? "PHP"
-                              : "Node.js"}{" "}
+                            {getRuntimeDisplay(run.serverInfo)}
+                          </p>
+                          <p className="text-xs text-gray-500">
                             {run.serverInfo.phpVersion ||
                               run.serverInfo.nodeVersion}
                           </p>
@@ -493,13 +523,11 @@ export default function BenchmarkViewer({
                 </p>
               </div>
               <div>
-                <p className="text-xs text-indigo-600">
-                  {selectedRun.serverInfo.runtime === "PHP" ||
-                  selectedRun.serverInfo.phpVersion
-                    ? "PHP"
-                    : "Node.js"}
-                </p>
+                <p className="text-xs text-indigo-600">Runtime</p>
                 <p className="text-lg font-bold text-indigo-900">
+                  {getRuntimeDisplay(selectedRun.serverInfo)}
+                </p>
+                <p className="text-xs text-indigo-600">
                   {selectedRun.serverInfo.phpVersion ||
                     selectedRun.serverInfo.nodeVersion}
                 </p>

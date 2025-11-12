@@ -7,7 +7,6 @@
     "build": "astro build && node scripts/build-server.js",
     "build:astro": "astro build",
     "build:server": "node scripts/build-server.js",
-    "preview": "astro preview",
     "preview:traditional": "SSR_MODE=traditional node dist/server/custom-server.js",
     "preview:worker": "SSR_MODE=worker node dist/server/custom-server.js",
     "preview:worker:debug": "SSR_MODE=worker SSR_DEBUG=true node dist/server/custom-server.js",

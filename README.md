@@ -1,6 +1,12 @@
-# SSR Performance Comparison: Node.js vs PHP
+# SSR Performance Comparison: Multi-Runtime Benchmarking
 
-Performance benchmarking comparing Astro (Node.js) SSR against traditional PHP SSR across different workload types.
+Performance benchmarking comparing different SSR implementations across multiple runtimes and modes:
+
+- **PHP** - Traditional SSR with PHP-FPM
+- **Astro** - Custom worker pool, hybrid, and traditional SSR modes
+- **Vanilla Node.js + React** - Worker pool and traditional SSR modes
+
+All implementations are tested with Docker replicas and nginx load balancing to compare performance under various workloads.
 
 ## The Problem with Node.js SSR
 
@@ -12,30 +18,52 @@ Node.js is single-threaded, creating bottlenecks for SSR:
 
 **Real impact**: With 100 concurrent connections rendering a complex page, traditional SSR achieves ~67 req/s with 51% timeout rate.
 
-## Experiment: Worker Threads
+## Experiment: Worker Threads & Multi-Runtime Comparison
 
-This project experiments **worker-based SSR** inspired by [Wix Engineering's approach](https://www.wix.engineering/post/how-wix-applied-multi-threading-to-node-js-and-cut-thousands-of-ssr-pods-and-money) and comparing it with other solutions (load balancing):
+This project experiments **worker-based SSR** inspired by [Wix Engineering's approach](https://www.wix.engineering/post/how-wix-applied-multi-threading-to-node-js-and-cut-thousands-of-ssr-pods-and-money) and compares it across different runtimes and deployment strategies:
 
-- **Main thread**: HTTP server, routing, I/O operations
-- **Worker threads**: Pure SSR rendering distributed across CPU cores
-- **Expected improvement**: 5-10x throughput by utilizing all cores
+### SSR Modes Tested:
 
-Astro offers three modes:
+**Astro:**
 - **Traditional**: Single-threaded baseline
 - **Worker**: All SSR offloaded to workers
 - **Hybrid**: Intelligent routing (I/O on main, CPU on workers)
 
-PHP comparison provides baseline for traditional process-based concurrency (PHP-FPM).
+**Vanilla Node.js + React:**
+- **Traditional**: Single-threaded SSR
+- **Worker**: Worker pool for parallel rendering
+
+**PHP:**
+- Traditional process-based concurrency (PHP-FPM)
+
+All implementations use Docker with nginx load balancing and multiple replicas to maximize CPU utilization.
 
 ## Quick Start
 
-### Run Astro (Node.js)
+### Run Astro
 
 ```bash
 cd astro
 npm install
 npm run build
 npm run preview:worker  # or preview:traditional, preview:hybrid
+```
+
+### Run Vanilla Node.js + React
+
+```bash
+cd nodejs
+npm install
+npm run build
+
+# Traditional mode
+npm start
+
+# Worker mode
+SSR_MODE=worker npm start
+
+# Or use Docker with replicas
+docker-compose up --build
 ```
 
 ### Run PHP
@@ -50,6 +78,9 @@ docker-compose up --build
 ```bash
 # Benchmark Astro (must be running on localhost:80)
 npm run benchmark:astro
+
+# Benchmark Node.js (must be running on localhost:3000)
+npm run benchmark:nodejs
 
 # Benchmark PHP (must be running on localhost:8080)
 npm run benchmark:php

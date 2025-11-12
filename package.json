@@ -12,6 +12,10 @@
     "benchmark:php:peak": "node benchmark/baseline.js --duration 30 --connections 50 --pipelining 4 --url http://localhost:8080",
     "benchmark:php:stress": "node benchmark/baseline.js --url http://localhost:8080",
     "benchmark:php:extreme": "node benchmark/baseline.js --stress --url http://localhost:8080",
+    "benchmark:nodejs": "node benchmark/baseline.js --duration 10 --connections 10 --pipelining 1 --url http://localhost:3000",
+    "benchmark:nodejs:peak": "node benchmark/baseline.js --duration 30 --connections 50 --pipelining 4 --url http://localhost:3000",
+    "benchmark:nodejs:stress": "node benchmark/baseline.js --url http://localhost:3000",
+    "benchmark:nodejs:extreme": "node benchmark/baseline.js --stress --url http://localhost:3000",
     "view-results": "cd astro && npm install && npm run dev -- --open /benchmark-results"
   },
   "devDependencies": {
